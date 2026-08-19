@@ -1,4 +1,4 @@
-﻿namespace PlayGround
+﻿namespace OOP4
 {
     internal class Program
     {
@@ -17,7 +17,7 @@
             //c) No, yes
 
             //Q3
-            int NoOfShips = 3;
+            int NoOfShips = 1;
             string cleanStr = default;
             decimal cleanNumber = default;
 
@@ -83,16 +83,25 @@
                 return;
             }
 
-            Console.WriteLine("Remove Shipment.....");
-            deliveryCenter.RemoveShipment(SearchingTrackingCode);
-            Console.WriteLine("The Remaining Shipments are:");
-            deliveryCenter.PrintAllShipments();
+            // Console.WriteLine("Remove Shipment.....");
+            // deliveryCenter.RemoveShipment(SearchingTrackingCode);
+            // Console.WriteLine("The Remaining Shipments are:");
+            // deliveryCenter.PrintAllShipments();
 
             Console.WriteLine("Updating Weight...");
             var w = deliveryCenter[SearchingTrackingCode].Weight;
             Console.WriteLine($"Original Weight: {w} kg");
             deliveryCenter[SearchingTrackingCode].SetWeight(w, 10);
             Console.WriteLine($"Updated Weight After Packing : {deliveryCenter[SearchingTrackingCode].Weight} kg");
+
+            Console.WriteLine("-------------------------");
+            DeliveryReport.PrintShipment(deliveryCenter[0]);
+            // DeliveryReport.PrintShipment(deliveryCenter[1]);
+            // DeliveryReport.PrintShipment(deliveryCenter[2]);
+
+            DeliveryReport.PrintInsurance(deliveryCenter[0]);
+            // DeliveryReport.PrintInsurance(deliveryCenter[1]);
+            // DeliveryReport.PrintInsurance(deliveryCenter[2]);
         }
 
         private static void fetchData(int i, out string trackingCode, out string description, out decimal weightNo,
@@ -191,7 +200,7 @@
             }
         }
 
-        public abstract class Shipment
+        public abstract class Shipment : IInsurable, ITrackable
         {
             string _TrackingCode;
 
@@ -286,37 +295,16 @@
                 }
             }
 
-            public abstract virtual void PrintShipment();
+            public abstract void PrintShipment();
+            public abstract decimal CalculateInsurance();
+            public abstract string GetTrackingStatus();
         }
 
-        public class StandardShipment : Shipment
+        public class StandardShipment : Shipment, ITrackable
         {
-
-            public decimal EstimatedCost { get; }
-
-            public override StandardShipment(string trackingCode, string description, decimal weight, decimal deliveryFee,
-                Console.WriteLine($"Delivery Fee: ${DeliveryFee}");
-                Console.WriteLine($"Destination: {Destination.GetFullAddress()}");
-                Console.WriteLine($"Estimated Cost: ${EstimatedCost}");
-                Console.WriteLine("======================================================");
-            }
-        }
-
-        public class StandardShipment : Shipment
-        {
-            public StandardShipment(string trackingCode, string description, decimal weight, decimal deliveryFee,
-                DeliveryAddress destination)
-                : base(trackingCode, description, weight, deliveryFee, destination)
+            public override decimal EstimatedCost
             {
-            }
-        }
-
-        public sealed class CompletedShipment : Shipment
-        {
-            public CompletedShipment(string trackingCode, string description, decimal weight, decimal deliveryFee,
-                DeliveryAddress destination)
-                : base(trackingCode, description, weight, deliveryFee, destination)
-            {
+                get => DeliveryFee + (Weight * 5);
             }
 
             public override void PrintShipment()
@@ -329,9 +317,61 @@
                 Console.WriteLine($"Estimated Cost: ${EstimatedCost}");
                 Console.WriteLine("======================================================");
             }
+
+            public StandardShipment(string trackingCode, string description, decimal weight, decimal deliveryFee,
+                DeliveryAddress destination) : base(
+                trackingCode, description, weight, deliveryFee, destination)
+            {
+                Console.WriteLine($"Delivery Fee: ${DeliveryFee}");
+                Console.WriteLine($"Destination: {Destination.GetFullAddress()}");
+                Console.WriteLine($"Estimated Cost: ${EstimatedCost}");
+                Console.WriteLine("======================================================");
+            }
+
+            public override string GetTrackingStatus()
+            {
+                return "Shipment SH002 is Out for Delivery.\n";
+            }
+
+            public override decimal CalculateInsurance()
+            {
+                return 0.05M * EstimatedCost;
+            }
         }
 
-        public class ExpressShipment : Shipment
+        public sealed class CompletedShipment : Shipment, ITrackable
+        {
+            public CompletedShipment(string trackingCode, string description, decimal weight, decimal deliveryFee,
+                DeliveryAddress destination)
+                : base(trackingCode, description, weight, deliveryFee, destination)
+            {
+            }
+
+            public override decimal EstimatedCost { get; }
+
+            public override void PrintShipment()
+            {
+                Console.WriteLine("");
+                Console.WriteLine($"Tracking Code: {TrackingCode}");
+                Console.WriteLine($"Description: {Description}");
+                Console.WriteLine($"Weight: {Weight} kg");
+                Console.WriteLine($"Delivery Fee: ${DeliveryFee}");
+                Console.WriteLine($"Estimated Cost: ${EstimatedCost}");
+                Console.WriteLine("======================================================");
+            }
+
+            public override decimal CalculateInsurance()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override string GetTrackingStatus()
+            {
+                return "Shipment SH003 has been Delivered.\n";
+            }
+        }
+
+        public class ExpressShipment : Shipment, ITrackable, IInsurable
         {
             decimal _ExtraFee;
 
@@ -368,9 +408,19 @@
                 Console.WriteLine($"Estimated Cost: ${EstimatedCost}");
                 Console.WriteLine("======================================================");
             }
+
+            public override string GetTrackingStatus()
+            {
+                return "Shipment SH003 has been Delivered.\n";
+            }
+
+            public override decimal CalculateInsurance()
+            {
+                return 0.08M * EstimatedCost;
+            }
         }
 
-        public class InternationalShipment : Shipment
+        public class InternationalShipment : Shipment, ITrackable, IInsurable
         {
             private string _destinationCountry;
             private decimal _customsFee;
@@ -424,9 +474,33 @@
                 Console.WriteLine($"Estimated Cost: ${EstimatedCost}");
                 Console.WriteLine("======================================================");
             }
+
+            public override string GetTrackingStatus()
+            {
+                return "Shipment SH002 is Out for Delivery.\n";
+            }
+
+            public override decimal CalculateInsurance()
+            {
+                return 0.12M * EstimatedCost;
+            }
         }
 
-        public class PriorityInternationalShipment : InternationalShipment
+        public class DeliveryReport
+        {
+            public static void PrintShipment(ITrackable shipment)
+            {
+                Console.WriteLine(shipment.GetTrackingStatus());
+                ;
+            }
+
+            public static void PrintInsurance(IInsurable shipment)
+            {
+                Console.WriteLine($"Insurance Cost: ${shipment.CalculateInsurance()}");
+            }
+        }
+
+        public class PriorityInternationalShipment : InternationalShipment, ITrackable
         {
             public PriorityInternationalShipment(decimal customsFee, string DestinationCountry, string trackingCode,
                 string description, decimal weight, decimal deliveryFee, DeliveryAddress destination) : base(customsFee,
@@ -437,6 +511,11 @@
             public sealed override void GenerateCustomsReport()
             {
                 base.GenerateCustomsReport();
+            }
+
+            public string GetTrackingStatus()
+            {
+                return "Shipment SH001 is Ready.\n";
             }
         }
 
@@ -496,6 +575,14 @@
                 return shipment.Equals(this[newPos]);
             }
 
+            public void PrintTrackingStatuses()
+            {
+                foreach (var shipment in _shipments)
+                {
+                    Console.WriteLine(shipment.GetTrackingStatus());
+                }
+            }
+
             public bool RemoveShipment(string trackingCode)
             {
                 var oldShipmentCount = _shipments?.Length;
@@ -518,6 +605,16 @@
             {
                 shipment.PrintShipment();
             }
+        }
+
+        public interface ITrackable
+        {
+            string GetTrackingStatus();
+        }
+
+        public interface IInsurable
+        {
+            decimal CalculateInsurance();
         }
     }
 }
