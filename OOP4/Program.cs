@@ -1,25 +1,76 @@
-﻿namespace OOP4
+﻿using System.Globalization;
+
+namespace OOP4
 {
-    internal class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            // Q1
-            // The practice of hiding complex implementation details and
-            // showing only the essential features of an object is called encapsulation.
-
-            //it solves the fundamental problem of managing code complexity at scale. Without 
-            //abstraction, software systems would become too tangled and interdependent to build, maintain, or understand.
-
-            // Q2
-            // a)  an abstract class defines what an object is, while an interface defines what an object can do.
-            // b) your primary goal is to define peripheral capabilities rather than a core identity.
-            //c) No, yes
-
+            /*
+             * Q1 — Object Copying
+             * a) Assigning one object variable to another copies the memory address (reference) stored in the variable, not the object itself
+             * b) No, it does not create a new object. Only the reference is duplicated.
+             * c)  Copying a Reference: Creates a new pointer targeting the original object in memory.
+             * c) Copying an Object: Allocates a new block of memory on the heap, instantiates a duplicate object,
+             * Q2 - Shallow Copy vs. Deep Copy
+             * a) Shallow Copy: Duplicates the object's top-level structure
+             * b) Deep Copy: Duplicates the object along with all nested or referenced objects recursively
+             * c) Both the original object and the copied object share references to the same underlying reference-type instances.
+             * d) Brand-new copies of all reference-type fields are instantiated so that neither object shares memory pointers.
+             * e) Deep copy is required when an object contains mutable reference-type fields that must be modified independently
+             *
+             * Q3 — Static Members
+             * a) A static field belongs to the class type itself and shares a single memory location across all instances
+             * An instance field belongs to a specific object instance, with every instantiated object receiving its own separate copy.
+             * b) A static method belongs to the class and can be called without instantiating an object.
+             * c) A specialized constructor used to initialize static data or perform actions required only once per class lifecycle
+             * d) A class marked with the static modifier that can only contain static members
+             *
+             * Q4 Extension Method
+             * a) A special kind of static method that lets you "add" methods to existing types without modifying their original source code
+             * b) The this keyword must precede the modifier of the first parameter, specifying which type the method is extending
+             * c) It must be declared as a static method inside a static class.
+             * d) No, an extension method cannot access private or protected members of the class it extends
+             *
+             * Q5 — Partial Classes and Partial Methods
+             *a) A class whose definition is split across two or more source files using the partial keyword
+             * The compiler merges all parts into a single class type during compilation.
+             *
+             * b) Enabling multiple developers to work on the same large class simultaneously without merge conflicts.
+             * c) A method whose declaration (signature) is defined in one part of a partial class and its implementation is optionally provided in another part. They must return void and are implicitly private.
+             * d) If a partial method has no implementation provided, the compiler removes both the method definition and all calls to it during compilation, leaving zero performance overhead.
+             */
             //Q3
-            int NoOfShips = 3;
+            int NoOfShips = 1;
             string cleanStr = default;
             decimal cleanNumber = default;
+
+            // Console.WriteLine("Copying Object");
+            // var sh = new StandardShipment("123456789", "Test Shipment", 10, 50,
+            //     new DeliveryAddress("Cairo", "Test Street", "123"));
+            // var copy = sh.CopyShipment();
+            // Console.WriteLine("Display Before: original:{0}, copied: {1}", sh.Destination.City, copy.Destination.City);
+            // sh.Destination.City = "Giza";
+            // Console.WriteLine("Display After: original:{0}, copied: {1}", sh.Destination.City, copy.Destination.City);
+            // Console.WriteLine("Same DeliveryAddress object? {0}", sh.Destination == copy.Destination);
+            //
+            // Console.WriteLine("Shallow Copying Object");
+            // sh = new StandardShipment("123456789", "Test Shipment", 10, 50,
+            //     new DeliveryAddress("Cairo", "Test Street", "123"));
+            // var shallowCopy = sh.ShallowCopy();
+            // Console.WriteLine("Display Before: original:{0}, copied: {1}", sh.Destination.City, shallowCopy.Destination.City);
+            // shallowCopy.Destination.City = "Alexandria-Shallow";
+            // Console.WriteLine("Display After: original:{0}, copied: {1}", sh.Destination.City, shallowCopy.Destination.City);
+            // Console.WriteLine("Same DeliveryAddress object? {0}", shallowCopy.Destination == sh.Destination);
+            //
+            // Console.WriteLine("Deep Copying Object");
+            // sh = new StandardShipment("123456789", "Test Shipment", 10, 50,
+            //     new DeliveryAddress("Cairo", "Test Street", "123"));
+            // var deepCopy = sh.DeepCopy();
+            // Console.WriteLine("Display Before: original:{0}, copied: {1}", sh.Destination.City, deepCopy.Destination.City);
+            // deepCopy.Destination.City = "Aswan-Deep";
+            // Console.WriteLine("Display After: original:{0}, copied: {1}", sh.Destination.City, deepCopy.Destination.City);
+            // Console.WriteLine("Same DeliveryAddress object? {0}", deepCopy.Destination == sh.Destination);
 
             var driver = new Driver(1, "el 7g Gom3a", "0123456789");
             var deliveryCenter = new DeliveryCenter(driver, NoOfShips);
@@ -27,13 +78,15 @@
             Console.Write("Enter Center Name: ");
             deliveryCenter.CenterName = sanitizeStrInput(cleanStr, Console.ReadLine());
 
+            DeliveryUtilities.PrintSystemTitle();
+
             Console.WriteLine($"Driver: {deliveryCenter.Driver.FullName}");
 
             var array = new Dictionary<string, List<int>>
             {
                 { "StandardShipment", [0] },
-                { "ExpressShipment", [1] },
-                { "InternationalShipment", [2] }
+                // { "ExpressShipment", [1] },
+                // { "InternationalShipment", [2] }
             };
             for (var i = 0; i < NoOfShips; i++)
             {
@@ -61,10 +114,11 @@
                         break;
                 }
 
-                Console.WriteLine("Shipment added successfully.");
+                Console.WriteLine("Shipment added essfully.");
             }
 
             Console.WriteLine("--- All Shipments");
+            DeliveryUtilities.PrintSeparator();
 
             deliveryCenter.PrintAllShipments();
 
@@ -75,7 +129,7 @@
             try
             {
                 Shipment? foundShipment = deliveryCenter[SearchingTrackingCode];
-                if(foundShipment == null) 
+                if (foundShipment == null)
                     Console.WriteLine($"Shipment with tracking code {SearchingTrackingCode} not found.");
                 else
                     DeliveryHelper.PrintShipmentDetails(foundShipment);
@@ -86,9 +140,10 @@
                 return;
             }
 
-            Console.WriteLine("Remove Shipment.....");
-            deliveryCenter.RemoveShipment(SearchingTrackingCode);
-            Console.WriteLine("The Remaining Shipments are:");
+            // Console.WriteLine("Remove Shipment.....");
+            // deliveryCenter.RemoveShipment(SearchingTrackingCode);
+            // Console.WriteLine("Shipment Removed");
+            // Console.WriteLine("The Remaining Shipments are:");
             deliveryCenter.PrintAllShipments();
 
             Console.WriteLine("Updating Weight...");
@@ -96,6 +151,11 @@
             Console.WriteLine($"Original Weight: {w} kg");
             deliveryCenter[SearchingTrackingCode].SetWeight(w, 10);
             Console.WriteLine($"Updated Weight After Packing : {deliveryCenter[SearchingTrackingCode].Weight} kg");
+
+            Console.WriteLine($"total shipment counter: {Shipment.GetTotalShipmentsCreated()}");
+
+            deliveryCenter[0].GetSummary();
+            deliveryCenter[0].IsDelivered();
         }
 
         private static void fetchData(int i, out string trackingCode, out string description, out decimal weightNo,
@@ -175,7 +235,7 @@
             return true;
         }
 
-        public struct DeliveryAddress
+        public class DeliveryAddress
         {
             public string City { get; set; }
             string Street;
@@ -192,15 +252,33 @@
             {
                 return $"{BuildingNumber} {Street}, {City}";
             }
+
+            public DeliveryAddress Copy()
+            {
+                return new DeliveryAddress(City, Street, BuildingNumber);
+            }
         }
 
-        public abstract class Shipment
+        public abstract partial class Shipment
         {
             string _TrackingCode;
 
             string _Description;
             decimal _Weight;
             decimal _DeliveryFee;
+
+            public static int TotalShipmentsCreated = 0;
+
+            static Shipment()
+            {
+                TotalShipmentsCreated++;
+                Console.WriteLine("Shipment System Initialized");
+            }
+
+            public static int GetTotalShipmentsCreated()
+            {
+                return TotalShipmentsCreated;
+            }
 
             public string TrackingCode
             {
@@ -242,9 +320,14 @@
                 get => _DeliveryFee;
             }
 
+            public abstract Shipment CopyShipment();
+            public abstract Shipment ShallowCopy();
+            public abstract Shipment DeepCopy();
+
             public DeliveryAddress Destination { get; set; }
 
             public abstract decimal EstimatedCost { get; }
+            public string TrackingStatus = "Delivered";
 
             public Shipment(string trackingCode, string description)
             {
@@ -269,6 +352,16 @@
                 Destination = destination;
             }
 
+            public partial void OnTrackingStatusChanged(string newStatus)
+            {
+                Console.WriteLine("Tracking status changed to: Out For Delivery");
+            }
+        }
+
+        public abstract partial class Shipment
+        {
+            public partial void OnTrackingStatusChanged(string newStatus);
+
             public decimal SetWeight(decimal weight)
             {
                 _Weight = weight;
@@ -292,6 +385,19 @@
             public abstract void PrintShipment();
         }
 
+        public static class DeliveryUtilities
+        {
+            public static void PrintSeparator()
+            {
+                Console.WriteLine("==========================================");
+            }
+
+            public static void PrintSystemTitle()
+            {
+                Console.WriteLine("Delivery Center");
+            }
+        }
+
         public class StandardShipment : Shipment
         {
             public StandardShipment(string trackingCode, string description, decimal weight, decimal deliveryFee,
@@ -300,7 +406,23 @@
             {
             }
 
+            public override Shipment CopyShipment()
+            {
+                return this;
+            }
+
+            public override Shipment ShallowCopy()
+            {
+                return (StandardShipment)MemberwiseClone();
+            }
+
+            public override Shipment DeepCopy()
+            {
+                return new StandardShipment(TrackingCode, Description, Weight, DeliveryFee, Destination.Copy());
+            }
+
             public override decimal EstimatedCost { get; }
+
             public override void PrintShipment()
             {
                 Console.WriteLine("");
@@ -313,12 +435,28 @@
             }
         }
 
+
         public sealed class CompletedShipment : Shipment
         {
             public CompletedShipment(string trackingCode, string description, decimal weight, decimal deliveryFee,
                 DeliveryAddress destination)
                 : base(trackingCode, description, weight, deliveryFee, destination)
             {
+            }
+
+            public override Shipment CopyShipment()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Shipment ShallowCopy()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Shipment DeepCopy()
+            {
+                throw new NotImplementedException();
             }
 
             public override decimal EstimatedCost { get; }
@@ -347,6 +485,21 @@
                         _ExtraFee = value;
                 }
                 get => _ExtraFee;
+            }
+
+            public override Shipment CopyShipment()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Shipment ShallowCopy()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Shipment DeepCopy()
+            {
+                throw new NotImplementedException();
             }
 
             public override decimal EstimatedCost
@@ -399,6 +552,21 @@
                 get => _customsFee;
             }
 
+            public override Shipment CopyShipment()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Shipment ShallowCopy()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Shipment DeepCopy()
+            {
+                throw new NotImplementedException();
+            }
+
             public override decimal EstimatedCost
             {
                 get => DeliveryFee + (Weight * 5) + CustomsFee;
@@ -406,7 +574,8 @@
 
             public virtual void GenerateCustomsReport()
             {
-                Console.WriteLine($"SGenerating customs report for shipment {TrackingCode} to {DestinationCountry} with customs fee of ${CustomsFee}");
+                Console.WriteLine(
+                    $"SGenerating customs report for shipment {TrackingCode} to {DestinationCountry} with customs fee of ${CustomsFee}");
             }
 
             public InternationalShipment(decimal customsFee, string destinationCountry, string trackingCode,
@@ -523,6 +692,21 @@
             {
                 shipment.PrintShipment();
             }
+        }
+    }
+
+    public static class ShipmentExtensions
+    {
+        public static void GetSummary(this Program.Shipment shipment)
+        {
+            Console.WriteLine("Getting Summary...");
+            Console.WriteLine(
+                $"Tracking Code: {shipment.TrackingCode}, Description: {shipment.Description}, Weight: {shipment.Weight} kg, Delivery Fee: ${shipment.DeliveryFee}, Estimated Cost: ${shipment.EstimatedCost}");
+        }
+
+        public static bool IsDelivered(this Program.Shipment shipment)
+        {
+            return shipment.TrackingStatus == "Delivered";
         }
     }
 }
