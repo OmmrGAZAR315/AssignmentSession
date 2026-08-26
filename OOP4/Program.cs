@@ -1,4 +1,4 @@
-﻿namespace PlayGround
+﻿namespace OOP4
 {
     internal class Program
     {
@@ -74,8 +74,11 @@
             Console.WriteLine("Searching for shipment...");
             try
             {
-                Shipment foundShipment = deliveryCenter[SearchingTrackingCode];
-                DeliveryHelper.PrintShipmentDetails(foundShipment);
+                Shipment? foundShipment = deliveryCenter[SearchingTrackingCode];
+                if(foundShipment == null) 
+                    Console.WriteLine($"Shipment with tracking code {SearchingTrackingCode} not found.");
+                else
+                    DeliveryHelper.PrintShipmentDetails(foundShipment);
             }
             catch (NullReferenceException ex)
             {
@@ -286,20 +289,7 @@
                 }
             }
 
-            public abstract virtual void PrintShipment();
-        }
-
-        public class StandardShipment : Shipment
-        {
-
-            public decimal EstimatedCost { get; }
-
-            public override StandardShipment(string trackingCode, string description, decimal weight, decimal deliveryFee,
-                Console.WriteLine($"Delivery Fee: ${DeliveryFee}");
-                Console.WriteLine($"Destination: {Destination.GetFullAddress()}");
-                Console.WriteLine($"Estimated Cost: ${EstimatedCost}");
-                Console.WriteLine("======================================================");
-            }
+            public abstract void PrintShipment();
         }
 
         public class StandardShipment : Shipment
@@ -308,6 +298,18 @@
                 DeliveryAddress destination)
                 : base(trackingCode, description, weight, deliveryFee, destination)
             {
+            }
+
+            public override decimal EstimatedCost { get; }
+            public override void PrintShipment()
+            {
+                Console.WriteLine("");
+                Console.WriteLine($"Tracking Code: {TrackingCode}");
+                Console.WriteLine($"Description: {Description}");
+                Console.WriteLine($"Weight: {Weight} kg");
+                Console.WriteLine($"Delivery Fee: ${DeliveryFee}");
+                Console.WriteLine($"Estimated Cost: ${EstimatedCost}");
+                Console.WriteLine("======================================================");
             }
         }
 
@@ -318,6 +320,8 @@
                 : base(trackingCode, description, weight, deliveryFee, destination)
             {
             }
+
+            public override decimal EstimatedCost { get; }
 
             public override void PrintShipment()
             {
@@ -402,14 +406,15 @@
 
             public virtual void GenerateCustomsReport()
             {
+                Console.WriteLine($"SGenerating customs report for shipment {TrackingCode} to {DestinationCountry} with customs fee of ${CustomsFee}");
             }
 
-            public InternationalShipment(decimal customsFee, string DestinationCountry, string trackingCode,
+            public InternationalShipment(decimal customsFee, string destinationCountry, string trackingCode,
                 string description, decimal weight, decimal deliveryFee, DeliveryAddress destination)
                 : base(trackingCode, description, weight, deliveryFee, destination)
             {
                 CustomsFee = customsFee;
-                DestinationCountry = DestinationCountry;
+                DestinationCountry = destinationCountry;
             }
 
             public override void PrintShipment()
@@ -472,7 +477,7 @@
                 {
                     foreach (var shipment in _shipments)
                     {
-                        if (shipment.TrackingCode == index)
+                        if (shipment?.TrackingCode == index)
                             return shipment;
                     }
 
@@ -489,7 +494,7 @@
 
             public bool AddShipment(Shipment shipment)
             {
-                var newPos = Array.FindIndex(_shipments, x => false);
+                var newPos = Array.FindIndex(_shipments, x => x == null);
                 this[newPos] = shipment;
 
                 // suppose be there exception thrown in int setter indexer
