@@ -4,187 +4,135 @@ class Program
 {
     static void Main(string[] args)
     {
-        /*
-         * Q1)
-         * A generic class is a blueprint for a class that can work with any data type,
-         * which you specify when you create an object.
-         *Q3
-         * Multiple type parameters allow
-         * a generic class or method to work with more than one placeholder data type at the same time
-         *
-         * Q4
-         * A generic method is a method declared with its own type parameters
-         *
-         *
-         *Q6
-         *  an interface declared with type parameters,
-         * serving as a reusable contract that defines methods
-         * or properties without tying them to a specific data type
-         *
-         *Q7
-         * The struct constraint specifies that the type parameter must be a value type
-         *
-         * Q8
-         * The class constraint specifies that the type parameter must be a reference type
-         *
-         * Q9
-         * The new() constraint specifies that the type parameter must have a public, parameterless constructor
-         *
-         *Q10
-         * The interface constraint specifies that the type parameter must implement a specific interface
-         *
-         * Q11
-         *The base class constraint specifies that the type parameter must inherit from a specific base class
-         * Q12
-         *To apply multiple constraints to a single type parameter, separate them with a comma after the where keyword
-         *
-         *
-         *
-         */
-    ValueInspector<int> intInspector = new ValueInspector<int>(); 
-    ReferenceChecker<Customer> customerChecker = new ReferenceChecker<Customer>();
-        
-    Factory<Car> carFactory = new Factory<Car>();
-    Car myCar = carFactory.CreateInstance();
-    
-    AnimalShelter<Dog> dogShelter = new AnimalShelter<Dog>();
-    
-    }
-    
-    public class Manager { }
-    public interface IDisposable { void Dispose(); }
-
-    public class WorkerFactory<T> where T : Manager, IDisposable, new()
-    {
-        public T CreateAndCleanUp()
+        List<Product> catalog = new()
         {
-            T worker = new T(); 
-            worker.Dispose(); 
-            return worker;
-        }
+            new Product { Id = 1, Name = "Laptop", Category = "Electronics", Price = 1200, Stock = 10 },
+            new Product { Id = 2, Name = "Phone", Category = "Electronics", Price = 800, Stock = 25 },
+            new Product { Id = 3, Name = "T-Shirt", Category = "Clothing", Price = 30, Stock = 100 },
+            new Product { Id = 4, Name = "Jeans", Category = "Clothing", Price = 60, Stock = 50 },
+            new Product { Id = 5, Name = "Chocolate", Category = "Food", Price = 5, Stock = 200 },
+            new Product { Id = 6, Name = "Coffee Beans", Category = "Food", Price = 15, Stock = 80 },
+            new Product { Id = 7, Name = "C# Book", Category = "Books", Price = 45, Stock = 30 },
+            new Product { Id = 8, Name = "Novel", Category = "Books", Price = 20, Stock = 60 },
+            new Product { Id = 9, Name = "Headphones", Category = "Electronics", Price = 150, Stock = 40 },
+            new Product { Id = 10, Name = "Jacket", Category = "Clothing", Price = 120, Stock = 15 }
+        };
+
+        Console.WriteLine("----Electronics-------");
+        var electronics = SearchProducts(catalog,
+            (Product x) => { return x.Category == "Electronics"; });
+        DisplayProducts(electronics);
+
+        Console.WriteLine("----Under $50-------");
+        var under50 = SearchProducts(catalog, p => p.Price < 50);
+        DisplayProducts(under50);
+
+        Console.WriteLine("----In Stock-------");
+        var inStock = SearchProducts(catalog, p => p.Stock > 0);
+        DisplayProducts(inStock);
+        Console.WriteLine("----Clothing-------");
+        var clothing = SearchProducts(catalog, p => p is { Category: "Clothing", Price: < 100 });
+        DisplayProducts(clothing);
+
+
+        Console.WriteLine("----Short Report-----");
+        var shortReport = PrintReport(catalog);
+        DisplayProducts(shortReport);
+
+        Console.WriteLine("----Detailed Report-----");
+        var detailedReport = PrintReport(catalog);
+        DisplayProductsDetailedReport(detailedReport);
+
+        Console.WriteLine("--------Summary List---------");
+        var summaryList = TransformProducts(catalog);
+        DisplayProductsShortReport(summaryList);
+
+        Console.WriteLine("--------Price Label--------");
+        var priceLabel = TransformProducts(catalog, p => p.Price > 100);
+        DisplayProductsLabel(priceLabel);
+
+        Console.WriteLine("--------Low Stock--------");
+        var lowStock = FilterProducts(catalog, p => p.Stock < 20);
+        DisplayProductsLowStock(lowStock);
     }
 
-    
-    public class Animal { public string Name { get; set; } }
-    public class Dog : Animal { }
-
-    public class AnimalShelter<T> where T : Animal
+    private static void DisplayProducts(List<Product> inStock)
     {
-        private List<T> _animals = new();
+        foreach (var product in inStock)
+            Console.WriteLine($"- {product.Name}: ${product.Price} (Stock: {product.Stock})");
+        Console.WriteLine();
+    }
 
-        public void PrintNames()
+    private static void DisplayProductsShortReport(List<Product> inStock)
+    {
+        foreach (var product in inStock)
+            Console.WriteLine($"- {product.Name}: ${product.Price})");
+        Console.WriteLine();
+    }
+
+    private static void DisplayProductsLabel(List<Product> inStock)
+    {
+        foreach (var product in inStock)
+            Console.WriteLine($"{product.Category}");
+        Console.WriteLine();
+    }
+    private static void DisplayProductsLowStock(List<Product> inStock)
+    {
+        foreach (var product in inStock)
+            Console.WriteLine($"[LOW STOCK]{product.Name}: only 10 left!");
+        Console.WriteLine();
+    }
+
+    private static void DisplayProductsDetailedReport(List<Product> inStock)
+    {
+        foreach (var product in inStock)
+            Console.WriteLine(
+                $"- [{product.Category}]{product.Name} | Price: ${product.Price} | Stock: {product.Stock}");
+        Console.WriteLine();
+    }
+
+    private static List<Product> SearchProducts(List<Product> products, Func<Product, bool> delegateProduct)
+    {
+        List<Product> filteredProducts = [];
+        foreach (var product in products)
         {
-            foreach (var animal in _animals)
-            {
-                Console.WriteLine(animal.Name); 
-            }
-        }
-    }
-
-    public interface ILoggable
-    {
-        void Log();
-    }
-
-    
-    
-    public class LoggerUtility
-    {
-        public static void RunAndLog<T>(T item) where T : ILoggable
-        {
-            item.Log(); 
-        }
-    }
-
-    
-    public class Factory<T> where T : class, new()
-    {
-        public T CreateInstance()
-        {
-            return new T(); 
-        }
-    }
-
-    public class Car 
-    { 
-        public Car() { /* Parameterless constructor */ } 
-    }
-
-
-    public class ReferenceChecker<T> where T : class
-    {
-        // Safe to check for null because T is guaranteed to be a reference type
-        public bool IsNull(T item)
-        {
-            return item == null;
-        }
-    }
-
-
-    public class ValueInspector<T> where T : struct
-    {
-        // Since T is a value type, we can safely reset it to its default non-null state
-        public void PrintDefaultValue()
-        {
-            T defaultValue = default(T);
-            Console.WriteLine($"Default value: {defaultValue}");
-        }
-    }
-
-
-
-    public interface IRepository<T>
-    {
-        void Add(T entity);
-        T GetById(int id);
-        IEnumerable<T> GetAll();
-        void Update(T entity);
-        void Delete(int id);
-    }
-
-    
-    public class Utility
-    {
-        public static T FindMax<T>(T a, T b) where T : IComparable<T>
-        {
-            return a.CompareTo(b) > 0 ? a : b;
-        }
-        
-        public static void Swap<T>(ref T a, ref T b)
-        {
-            T temp = a;
-            a = b;
-            b = temp;
-        }
-    }
-    public class Pair<TKey, TValue>
-    {
-        public TKey Key { get; set; }
-        public TValue Value { get; set; }
-
-        public Pair(TKey key, TValue value)
-        {
-            Key = key;
-            Value = value;
-        }
-    }
-    
-    public class Container<T>
-    {
-        private T? _item;
-
-        public void Add(T item)
-        {
-            _item = item;
+            if (delegateProduct(product)) filteredProducts.Add(product);
         }
 
-        public T Get()
-        {
-            return _item;
-        }
+        return filteredProducts;
     }
-}
 
-internal class Customer
-{
+    private static List<Product> FilterProducts(List<Product> products, Predicate<Product> delegateProduct)
+    {
+        return products.FindAll(delegateProduct);
+    }
+
+    private static List<Product> PrintReport(List<Product> products, Func<Product, bool>? delegateProduct = default)
+    {
+        List<Product> filteredProducts = [];
+        if (delegateProduct == null) return products;
+        foreach (var product in products)
+        {
+            if (delegateProduct(product)) filteredProducts.Add(product);
+        }
+
+        return filteredProducts;
+    }
+
+    private static List<Product> TransformProducts(List<Product> products,
+        Func<Product, bool>? delegateProduct = default)
+    {
+        List<Product> filteredProducts = [];
+        if (delegateProduct == null) return products;
+        foreach (var product in products)
+        {
+            var isProductBiggerThan100 = product.Price > 100;
+            var label = isProductBiggerThan100 ? "Expensive" : "Affordable";
+            var clonedProduct = product.Clone();
+            clonedProduct.Category = $"{product.Name}: {label}{(isProductBiggerThan100 ? "!" : "")}";
+            filteredProducts.Add(clonedProduct);
+        }
+
+        return filteredProducts;
+    }
 }
