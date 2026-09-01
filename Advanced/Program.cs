@@ -4,135 +4,92 @@ class Program
 {
     static void Main(string[] args)
     {
-        List<Product> catalog = new()
+        List<int> grades = [85, 92, 78, 95, 88, 70, 100, 65];
+        Console.WriteLine(string.Join(",", grades));
+        Console.WriteLine(grades.Count());
+        grades.Sort();
+        Console.WriteLine(grades[1]);
+        Console.WriteLine(grades[^1]);
+        Console.WriteLine(grades.FindAll(x => x > 90));
+        Console.WriteLine(grades.RemoveAll(x => x < 75));
+        Console.WriteLine(grades.Contains(100));
+        var gradesStr = grades.ConvertAll(x => $"Grade: {x}");
+        Console.WriteLine(string.Join(",", gradesStr));
+
+        var leaderboard = new SortedList<int, string>()
         {
-            new Product { Id = 1, Name = "Laptop", Category = "Electronics", Price = 1200, Stock = 10 },
-            new Product { Id = 2, Name = "Phone", Category = "Electronics", Price = 800, Stock = 25 },
-            new Product { Id = 3, Name = "T-Shirt", Category = "Clothing", Price = 30, Stock = 100 },
-            new Product { Id = 4, Name = "Jeans", Category = "Clothing", Price = 60, Stock = 50 },
-            new Product { Id = 5, Name = "Chocolate", Category = "Food", Price = 5, Stock = 200 },
-            new Product { Id = 6, Name = "Coffee Beans", Category = "Food", Price = 15, Stock = 80 },
-            new Product { Id = 7, Name = "C# Book", Category = "Books", Price = 45, Stock = 30 },
-            new Product { Id = 8, Name = "Novel", Category = "Books", Price = 20, Stock = 60 },
-            new Product { Id = 9, Name = "Headphones", Category = "Electronics", Price = 150, Stock = 40 },
-            new Product { Id = 10, Name = "Jacket", Category = "Clothing", Price = 120, Stock = 15 }
+            { 500, "Ahmed" },
+            { 200, "Sara" },
+            { 800, "Ali" },
+            { 350, "Mona" },
+        };
+        Console.WriteLine(string.Join(",", leaderboard));
+        Console.WriteLine(leaderboard.First());
+        Console.WriteLine(leaderboard.Last());
+        Console.WriteLine(leaderboard.ContainsKey(500));
+        if (leaderboard.TryGetValue(999, out var result))
+            Console.WriteLine($"Found Player: {result}");
+        else
+            Console.WriteLine("Not Found");
+        leaderboard.Remove(200);
+        Console.WriteLine(string.Join(",", leaderboard));
+
+        var phoneContact = new Dictionary<string, string>()
+        {
+            { "Omar Ahmed", "0122299400" },
+            { "Omar Ahmed2", "0122299402" },
+            { "Omar Ahmed3", "0122299403" },
+            { "Omar Ahmed4", "0122299404" },
         };
 
-        Console.WriteLine("----Electronics-------");
-        var electronics = SearchProducts(catalog,
-            (Product x) => { return x.Category == "Electronics"; });
-        DisplayProducts(electronics);
-
-        Console.WriteLine("----Under $50-------");
-        var under50 = SearchProducts(catalog, p => p.Price < 50);
-        DisplayProducts(under50);
-
-        Console.WriteLine("----In Stock-------");
-        var inStock = SearchProducts(catalog, p => p.Stock > 0);
-        DisplayProducts(inStock);
-        Console.WriteLine("----Clothing-------");
-        var clothing = SearchProducts(catalog, p => p is { Category: "Clothing", Price: < 100 });
-        DisplayProducts(clothing);
-
-
-        Console.WriteLine("----Short Report-----");
-        var shortReport = PrintReport(catalog);
-        DisplayProducts(shortReport);
-
-        Console.WriteLine("----Detailed Report-----");
-        var detailedReport = PrintReport(catalog);
-        DisplayProductsDetailedReport(detailedReport);
-
-        Console.WriteLine("--------Summary List---------");
-        var summaryList = TransformProducts(catalog);
-        DisplayProductsShortReport(summaryList);
-
-        Console.WriteLine("--------Price Label--------");
-        var priceLabel = TransformProducts(catalog, p => p.Price > 100);
-        DisplayProductsLabel(priceLabel);
-
-        Console.WriteLine("--------Low Stock--------");
-        var lowStock = FilterProducts(catalog, p => p.Stock < 20);
-        DisplayProductsLowStock(lowStock);
-    }
-
-    private static void DisplayProducts(List<Product> inStock)
-    {
-        foreach (var product in inStock)
-            Console.WriteLine($"- {product.Name}: ${product.Price} (Stock: {product.Stock})");
-        Console.WriteLine();
-    }
-
-    private static void DisplayProductsShortReport(List<Product> inStock)
-    {
-        foreach (var product in inStock)
-            Console.WriteLine($"- {product.Name}: ${product.Price})");
-        Console.WriteLine();
-    }
-
-    private static void DisplayProductsLabel(List<Product> inStock)
-    {
-        foreach (var product in inStock)
-            Console.WriteLine($"{product.Category}");
-        Console.WriteLine();
-    }
-    private static void DisplayProductsLowStock(List<Product> inStock)
-    {
-        foreach (var product in inStock)
-            Console.WriteLine($"[LOW STOCK]{product.Name}: only 10 left!");
-        Console.WriteLine();
-    }
-
-    private static void DisplayProductsDetailedReport(List<Product> inStock)
-    {
-        foreach (var product in inStock)
-            Console.WriteLine(
-                $"- [{product.Category}]{product.Name} | Price: ${product.Price} | Stock: {product.Stock}");
-        Console.WriteLine();
-    }
-
-    private static List<Product> SearchProducts(List<Product> products, Func<Product, bool> delegateProduct)
-    {
-        List<Product> filteredProducts = [];
-        foreach (var product in products)
+        phoneContact["USER"] = "012220023323";
+        try
         {
-            if (delegateProduct(product)) filteredProducts.Add(product);
+            phoneContact.Add("Omar Ahmed", "012220023323");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
 
-        return filteredProducts;
-    }
+        if (phoneContact.TryAdd("Omar Ahmed", "012220023323"))
+            Console.WriteLine($"Found Phone: {phoneContact["Omar Ahmed"]}");
+        else
+            Console.WriteLine("Not Found");
 
-    private static List<Product> FilterProducts(List<Product> products, Predicate<Product> delegateProduct)
-    {
-        return products.FindAll(delegateProduct);
-    }
+        if (!phoneContact.TryGetValue("Omar Ahmed", out var phone))
+            Console.WriteLine("Not Found");
+        phoneContact.GetValueOrDefault("Ahmed", "Not Found");
+        Console.WriteLine(String.Join(",", phoneContact.Keys));
+        Console.WriteLine(String.Join(",", phoneContact.Values));
 
-    private static List<Product> PrintReport(List<Product> products, Func<Product, bool>? delegateProduct = default)
-    {
-        List<Product> filteredProducts = [];
-        if (delegateProduct == null) return products;
-        foreach (var product in products)
+
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        string[] inputEmails = { "ahmed@test.com", "AHMED@test.com", "sara@test.com", "Sara@Test.Com" };
+
+        Console.WriteLine("--- Adding Emails ---");
+        foreach (var email in inputEmails)
         {
-            if (delegateProduct(product)) filteredProducts.Add(product);
+            var added = set.Add(email);
+            Console.WriteLine($"Adding '{email}'... {(added ? "Success (New)" : "Skipped (Duplicate)")}");
         }
 
-        return filteredProducts;
-    }
+        Console.WriteLine(set.Count());
 
-    private static List<Product> TransformProducts(List<Product> products,
-        Func<Product, bool>? delegateProduct = default)
-    {
-        List<Product> filteredProducts = [];
-        if (delegateProduct == null) return products;
-        foreach (var product in products)
-        {
-            var isProductBiggerThan100 = product.Price > 100;
-            var label = isProductBiggerThan100 ? "Expensive" : "Affordable";
-            var clonedProduct = product.Clone();
-            clonedProduct.Category = $"{product.Name}: {label}{(isProductBiggerThan100 ? "!" : "")}";
-            filteredProducts.Add(clonedProduct);
-        }
+        HashSet<int> a = [1, 2, 3, 4, 5];
+        HashSet<int> temp = new(a);
+        HashSet<int> b = [4, 5, 6, 7, 8];
 
-        return filteredProducts;
+        a.UnionWith(b);
+        Console.WriteLine("Union: " + string.Join(", ", a));
+        Console.WriteLine(string.Join(", ", temp));
+
+        a = new(temp);
+        a.IntersectWith(b);
+        Console.WriteLine("Intersection: " + string.Join(", ", a));
+
+        a = temp;
+        var isSubset = new HashSet<int> { 1, 2 }.IsSubsetOf(a);
+        Console.WriteLine("Is [1, 2] a subset of a? " + isSubset);
     }
 }
